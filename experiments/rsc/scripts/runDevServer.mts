@@ -7,8 +7,10 @@ import http from 'node:http';
 import { resolve } from 'node:path';
 
 import { buildVendorBundles } from './buildVendorBundles.mjs';
-import { config as miniflareConfig } from '../miniflare.config';
+// harryhcs - I could not get this config improt working as it was, but I did not spend any time on that 
+import { config as viteConfig } from '../miniflare.config.mjs';
 import { viteConfigs } from './viteConfigs.mjs';
+import { $ } from 'execa';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 export const RESOLVED_WORKER_PATHNAME = resolve(__dirname, '../src/worker.tsx')
@@ -37,16 +39,19 @@ const configs = {
 const createServers = async () => {
   if (process.env.FORCE_BUILD_VENDOR || !(await pathExists(VENDOR_DIST_DIR))) {
     await buildVendorBundles()
+    await $`pnpm prisma generate`
   }
 
   const clientDevServer = await createViteServer(configs.clientDevServer())
   await createViteServer(configs.workerDevServer({ getMiniflare: () => miniflare }))
 
   const miniflare = new Miniflare({
-    ...miniflareConfig,
+    ...viteConfig,
+    // context(justinvdm, 2024-11-21): `npx wrangler d1 migrations apply` creates a sqlite file in `.wrangler/state/v3/d1`
+    d1Persist: resolve(__dirname, '../.wrangler/state/v3/d1'),
     modules: true,
     script: await buildWorkerScript(),
-    compatibilityFlags: ["streams_enable_constructors", "transformstream_enable_standard_constructor"],
+    compatibilityFlags: ["streams_enable_constructors", "transformstream_enable_standard_constructor", "nodejs_compat"],
   });
 
   const server = http.createServer(async (req, res) => {

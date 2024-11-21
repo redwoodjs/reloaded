@@ -6,6 +6,7 @@
 	"scripts": {
 		"build": "npx tsx ./scripts/build.mts",
 		"dev": "NODE_ENV=development npx tsx ./scripts/runDevServer.mts",
+		"migrate:dev": "npx wrangler d1 migrations apply DB --local",
 		"types": "wrangler types && tsc",
 		"deploy": "wrangler deploy"
 	},
@@ -15,6 +16,8 @@
 	"private": true,
 	"dependencies": {
 		"@cloudflare/workers-types": "^4.20241112.0",
+		"@prisma/adapter-d1": "^5.22.0",
+		"@prisma/client": "5.22.0",
 		"@types/lodash": "^4.17.13",
 		"lodash": "^4.17.21",
 		"react": "19.0.0-rc-f2df5694-20240916",
@@ -28,8 +31,10 @@
 		"@types/fs-extra": "^11.0.4",
 		"@types/react": "^18.3.12",
 		"@types/react-dom": "^18.3.1",
+		"execa": "^9.5.1",
 		"fs-extra": "^11.2.0",
 		"miniflare": "^3.20241106.0",
+		"prisma": "^5.22.0",
 		"react": "^18.3.1",
 		"tsx": "^4.19.2",
 		"vite": "^5.4.11",

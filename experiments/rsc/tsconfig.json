@@ -21,6 +21,7 @@
 		],
 		"paths": {
 			"vendor/*": ["./vendor/dist/*"],
+			"@prisma/client": ["./vendor/dist/prisma-client/index.d.ts"]
 		},
 		/* Enable importing .json files */
 		"resolveJsonModule": true,

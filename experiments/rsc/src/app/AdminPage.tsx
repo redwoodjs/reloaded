@@ -1,12 +1,16 @@
 import { db } from "../db";
+import { R2Storage } from "../r2storage";
 
 import CreateTradesman from "./components/CreateTradesman";
 
 export default async function AdminPage() {
   let tradesmen = await db
     .selectFrom("Tradesman")
-    .select(["id", "name", "cellnumber", "profession"])
+    .select(["id", "name", "cellnumber", "profession", "profilePicture"])
     .execute();
+
+  const files = await R2Storage.listFiles();
+  console.log(files);
   return (
     <div className="max-w-sm mx-auto">
       <h1 className="text-2xl font-bold text-center py-4">Tradesmen</h1>
@@ -27,7 +31,7 @@ export default async function AdminPage() {
             <h2 className="text-xl font-bold">{profession}</h2>
             {groupedTradesmen.map((tradesman) => (
               <div key={tradesman.id}>
-                {tradesman.name} ({tradesman.cellnumber})
+                {tradesman.name} ({tradesman.cellnumber}) {tradesman.profilePicture}
               </div>
             ))}
           </div>

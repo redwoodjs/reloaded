@@ -8,8 +8,10 @@ import { resolve } from "node:path";
 import {
   CLIENT_DIST_DIR,
   DEV_SERVER_PORT,
+  MANIFEST_PATH,
   RELATIVE_CLIENT_PATHNAME,
   RELATIVE_WORKER_PATHNAME,
+  SRC_DIR,
   VENDOR_DIST_DIR,
   WORKER_DIST_DIR,
 } from "../lib/constants.mjs";
@@ -22,6 +24,7 @@ import { useServerPlugin } from "../lib/vitePlugins/useServerPlugin.mjs";
 import { useClientPlugin } from "../lib/vitePlugins/useClientPlugin.mjs";
 import commonjsPlugin from "vite-plugin-commonjs";
 import { useClientLookupPlugin } from "../lib/vitePlugins/useClientLookupPlugin.mjs";
+import { transformJsxLinksTagsPlugin } from "../lib/vitePlugins/transformJsxLinksTagsPlugin.mjs";
 
 const MODE =
   process.env.NODE_ENV === "development" ? "development" : "production";
@@ -62,6 +65,7 @@ export const viteConfigs = {
           rollupOptions: {
             input: {
               client: RELATIVE_CLIENT_PATHNAME,
+              style: resolve(SRC_DIR, "app", "style.css"),
             },
           },
         },
@@ -123,7 +127,10 @@ export const viteConfigs = {
     mergeConfig(viteConfigs.main(), {
       plugins: [
         transformJsxScriptTagsPlugin({
-          manifestPath: resolve(CLIENT_DIST_DIR, ".vite/manifest.json"),
+          manifestPath: MANIFEST_PATH,
+        }),
+        transformJsxLinksTagsPlugin({
+          manifestPath: MANIFEST_PATH,
         }),
         useClientLookupPlugin({
           filesContainingUseClient,

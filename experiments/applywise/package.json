@@ -1,0 +1,47 @@
+{
+  "name": "@redwoodjs/applywise",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "keywords": [],
+  "author": "",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "build": "vite build",
+    "migrate:dev": "wrangler d1 migrations apply DB --local",
+    "migrate:prd": "wrangler d1 migrations apply DB --remote",
+    "migrate:new": "rw-scripts migrate-new",
+    "seed": "pnpm worker:run ./src/scripts/seed.ts",
+    "dev": "while true; do NODE_ENV=development vite dev; [ $? -eq 0 ] || break; done",
+    "dev:init": "rw-scripts dev-init",
+    "worker:run": "rw-scripts worker-run",
+    "clean": "pnpm build && pnpm clean:vendor",
+    "clean:vite": "rm -rf ./node_modules/.vite",
+    "clean:vendor": "rm -rf ./vendor/dist",
+    "release": "pnpm build && wrangler deploy",
+    "format": "prettier --write ./src",
+    "__reset:reinstall": "(cd ../../ && rm -rf node_modules && rm -rf sdk/node_modules && rm -rf experiments/billable/node_modules && pnpm install)",
+    "__reset": "(cd ../../sdk && NODE_ENV=development pnpm build) && pnpm clean:vite",
+    "__reset:dev": "pnpm __reset && pnpm dev",
+    "__reset:build": "pnpm __reset && pnpm build",
+    "__reset:release": "pnpm __reset && pnpm release"
+  },
+  "dependencies": {
+    "@prisma/adapter-d1": "^6.3.1",
+    "@prisma/client": "^6.3.1",
+    "@redwoodjs/sdk": "workspace:*",
+    "prisma": "^6.3.1",
+    "react": "19.0.0-rc-f2df5694-20240916",
+    "react-dom": "19.0.0-rc-f2df5694-20240916",
+    "react-server-dom-webpack": "19.0.0-rc-f2df5694-20240916"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "vite": "^6.1.0",
+    "wrangler": "^3.105.1"
+  },
+  "packageManager": "pnpm@9.14.4+sha512.c8180b3fbe4e4bca02c94234717896b5529740a6cbadf19fa78254270403ea2f27d4e1d46a08a0f56c89b63dc8ebfd3ee53326da720273794e6200fcf0d184ab"
+}

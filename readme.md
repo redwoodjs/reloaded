@@ -5,7 +5,7 @@ This is a mono repo for the Redwood SDK.
 ```
 ├── docs - contains the docs for the SDK, based on Starlight
 ├── experiments - contains all the projects we've built as experiments
-│   ├── applywise - a tool for applying for jobs, this will be the basis for the new tutorial
+│   ├── applywize - a tool for applying for jobs, this will be the basis for the new tutorial
 │   ├── billable - a tool for creating invoices
 │   ├── cutable - a tool for cutting boards
 │   ├── cutl

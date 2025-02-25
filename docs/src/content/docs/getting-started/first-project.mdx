@@ -3,8 +3,7 @@ title: First Project
 description: Build and deploy your first Redwood SDK project.
 ---
 
-import { Aside } from '@astrojs/starlight/components';
-import { Tabs, TabItem } from '@astrojs/starlight/components';
+import { Aside, FileTree, Tabs, TabItem } from '@astrojs/starlight/components';
 
 This guide is designed for developers who are already comfortable with JavaScript frameworks and are looking to quickly understand RedwoodSDK's organization and conventions.
 
@@ -16,24 +15,23 @@ If you're new to JavaScript frameworks or prefer a more detailed learning path, 
 
 After you run the initial [installation command](/getting-started/installation), your project will have the following structure:
 
-```text frame="none"
-.
-├── package.json
-├── src
-│   ├── app
-│   │   ├── Document.tsx
-│   │   ├── pages
-│   │   │   └── Home.tsx
-│   │   └── shared
-│   │       └── links.ts
-│   ├── client.tsx
-│   └── worker.tsx
-├── tsconfig.json
-├── types
-├── vite.config.mts
-├── worker-configuration.d.ts
-└── wrangler.toml
-```
+<FileTree>
+- package.json
+- src/
+  - app/
+    - Document.tsx
+    - pages/
+      - Home.tsx
+    - shared/
+      - links.ts
+  - client.tsx
+  - worker.tsx
+- tsconfig.json
+- types
+- vite.config.mts
+- worker-configuration.d.ts
+- wrangler.toml
+</FileTree>
 
 Let's walk through each file and directory to understand their purpose.
 - `package.json` - Contains project configuration and dependencies.

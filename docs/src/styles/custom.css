@@ -4,3 +4,5 @@
 
 li details ul li .group-label span { font-size: 14px; text-transform: capitalize; }
 li details ul li details summary { padding-top: 8px; padding-bottom: 8px; }
+
+.sl-markdown-content table td code { white-space: nowrap; }

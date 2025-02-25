@@ -34,7 +34,7 @@ export default defineConfig({
               collapsed: true,
               items: [
                 { label: 'Project Setup', slug: 'tutorial/full-stack-app/setup' },
-                { label: 'Creating the Application', slug: 'tutorial/full-stack-app/create-app' },
+                { label: 'Create the Application', slug: 'tutorial/full-stack-app/create-app' },
                 { label: 'Database Setup', slug: 'tutorial/full-stack-app/database-setup' },
                 { label: 'Authentication', slug: 'tutorial/full-stack-app/auth' },
                 { label: 'Jobs List', slug: 'tutorial/full-stack-app/jobs-list' },
@@ -95,7 +95,8 @@ export default defineConfig({
               collapsed: true,
               items: [
                 { label: 'CRUD', slug: 'guides/db-data/crud' },
-                { label: 'Setting up Prisma', slug: 'guides/db-data/prisma' },
+                { label: 'Prisma', slug: 'guides/db-data/prisma' },
+                { label: 'Drizzle', slug: 'guides/db-data/drizzle' },
                 { label: 'Working with d1 Database', slug: 'guides/db-data/d1' },
               ]
             },
@@ -159,10 +160,9 @@ export default defineConfig({
               collapsed: true,
               items: [
                 { label: 'React Server Components', slug: 'guides/frontend/react-server-components' },
-                { label: 'Form Handling', slug: 'guides/frontend/forms' },
-                { label: 'Setting up Tailwind CSS', slug: 'guides/frontend/tailwind' },
-                { label: 'Integrating with ShadCN UI', slug: 'guides/frontend/shadcn' },
-                { label: 'Customizing Layouts', slug: 'guides/frontend/layouts' },
+                { label: 'TailwindCSS', slug: 'guides/frontend/tailwind' },
+                { label: 'ShadCN UI', slug: 'guides/frontend/shadcn' },
+                { label: 'Layouts', slug: 'guides/frontend/layouts' },
               ]
             },
             {

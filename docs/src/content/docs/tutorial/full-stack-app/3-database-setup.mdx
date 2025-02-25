@@ -1,0 +1,380 @@
+---
+title: Database Setup
+slug: tutorial/full-stack-app/database-setup
+sidebar:
+  label: Database Setup
+description: Setting up the database for the application
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+For this project, we'll use [Prisma](https://www.prisma.io/) as our ORM (Object Relational Mapper). This makes it easy to define our database and generate migrations.
+
+I like to start by going through the [application design files]() and making a list of all the tables (models) and fields we need.
+
+## Database Tables or Models
+
+Each model represents the type of data that will be stored in the table.
+
+We need models for:
+
+1. Job Applications
+2. Users
+
+**The "trick" with database design is to prevent duplication.** For example, we want to store the company information for each application. There's a chance we'll have multiple applications for the same company. If we store the company information directly in the `Application` model, we'll have duplicate entries. This could create all kinds of problems. For example, is it `RedwoodSDK`, `redwoodsdk`, `redwood-sdk`, or `RedwoodSdk`?
+
+Instead, we can store the company information in a separate model, with a single entry for each company, and link it to the relevant job application.
+
+The same applies to Contacts. We can create a separate model and create a relationship between the contact and the related company.
+
+3. Companies
+4. Contacts
+
+Application Statuses are a little different. The same principle applies. To avoid duplication, we will give statuses their own model. But, we will have a set of statuses (New, Applied, Interviewing, Offer, and Rejected) and won't be updating or deleting them.
+
+5. Application Statuses
+
+## Columns
+
+Now, that we know what our models are, we need to create the columns. What are the pieces of data we need to store for each model?.
+
+I always start with an `id`, `createdAt`, and `updatedAt` field.
+- `id` - We need a way to uniquely identify each record or row in the database.
+- `createdAt` - We need to know when the record was created.
+- `updatedAt` - We need to know when the record was last updated.
+
+<Aside type="tip" title="Soft Deleting">
+  If you're going to "soft delete" a record, you'll probably want a `deletedAt` column for tracking when the record was deleted.
+
+  "Soft deleting" a record means that instead of removing the record from the database, we'll set a column (i.e. `deleted`) to `true` to indicate that the record has been deleted. The entry won't be shown to the user, but it gives you a way to recover the data. This is also useful for auditing purposes.
+</Aside>
+
+### Data Types
+
+As you're making a list of all the data we need to store, you'll also need to think about the **data type** of each column.
+
+| **Prisma Type** |	**Description** |
+| --- | --- |
+| `String` | A UTF-8 encoded string |
+| `Boolean` | A true or false value |
+| `Int` | A 32-bit signed integer |
+| `BigInt` | A 64-bit signed integer (for large numbers) |
+| `Float` | A floating-point number |
+| `Decimal` | A high-precision decimal number |
+| `DateTime` | An ISO 8601 timestamp |
+| `Json` | Arbitrary JSON data |
+| `Bytes` | Binary data (Base64-encoded) |
+
+### IDs
+
+When it comes to `id`s, there are 2 different types: `String` and `Int`.
+
+- `String` - A UUID (Universally Unique Identifier) is a unique string of characters. For example: `2b22ee49-d788-4bf0-bacd-380b351ca1e0`
+- `Int` - An auto-incrementing integer.
+
+When you use an integer, the first entry is usually 1. The next entry is 2, then 3, etc. This makes it easy to tell how many entries are in the database, or to sort the entries by the order they were created. However, this can also create a security risk. It's easy to guess the next entry in the sequence.
+
+For example, if the URL for my application is `https://applywize.app/applications/1`, it's easy to guess the URL for the next application is: `https://applywize.app/applications/2`.
+
+This is where a UUID comes in handy. A UUID is a unique, random string of characters. It's near impossible to guess an entry's ID. The URL `https://applywize.app/applications/2b22ee49-d788-4bf0-bacd-380b351ca1e0` isn't quite as user friendly, but it's security by obscurity.
+
+Which is better? It depends. My general rule of thumb is if the user is going to see the ID, use a string. If the ID is an internal identifier, use an integer.
+
+## Application Model
+
+Let's start with the `Application` model.
+
+I need the following data:
+
+| **Field** | **Type** | **Notes** |
+| --- | --- | --- |
+| `id` | `String` | A UUID |
+| `salaryMin` | `String` | Optional. The minimum salary for the job. It might be helpful to make this a number, so we can sort the applications by salary. However, this might be a pain to format when displaying the data. |
+| `salaryMax` | `String` | Optional. The maximum salary for the job. Same as `salaryMin`. |
+| `dateApplied` | `DateTime` | Optional. The date the application was submitted. |
+| `jobTitle` | `String` | Optional. The job title |
+| `jobDescription` | `String` | Optional. The job description. |
+| `postingUrl` | `String` | Optional. The URL to the job posting. |
+| `archived` | `Boolean` | False by default.Whether the application has been archived |
+| `createdAt` | `DateTime` | The date the application was created. |
+| `updatedAt` | `DateTime` | The date the application was last updated. |
+
+Now, we need to translate all this information into a Prisma model. Prisma has it's own syntax for defining models. But, you'll notice that it looks similar to an object:
+
+```prisma title="src/db/schema.prisma"
+model Application {
+  id             String            @id @default(uuid())
+  salaryMin      String?
+  salaryMax      String?
+  dateApplied    DateTime?
+  jobTitle       String?
+  jobDescription String?
+  postingUrl     String?
+  archived       Boolean           @default(false)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime?         @updatedAt
+}
+```
+
+You'll notice a few things:
+
+- The `?` means that that field is optional.
+- Some fields are followed by a Prisma directive. For example, `@id` means that the field is the primary key.
+- We can specify a default value with the `@default()` directive.
+  - The `@default(uuid())` means that the field will be assigned a UUID
+  - The `@default(false)` means that the field will be `false` by default
+  - The `@default(now())` means that the field will be the current date and time
+- The `@updatedAt` directive is a special directive that tells Prisma to update the field with the current date and time whenever the record is updated.
+
+We can do the same for the remaining models.
+
+```prisma  title="src/db/schema.prisma"
+...
+
+model ApplicationStatus {
+  id           Int           @id @default(autoincrement())
+  status       String
+}
+
+model Company {
+  id           String        @id @default(uuid())
+  name         String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime?     @updatedAt
+}
+
+model Contact {
+  id        String    @id @default(uuid())
+  firstName String
+  lastName  String
+  email     String?
+  role      String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+model User {
+  id                 String        @id @default(uuid())
+  email              String        @unique
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime?     @updatedAt
+}
+```
+
+<Aside type="tip" title="Naming Conventions">
+  When working with Prisma, there a couple of naming conventions you should follow:
+  - Use singular names for your models. For example, `Application` not `Applications`.
+  - The model name should be in PascalCase.
+  - The field names should be start with a lowercase letter, pascal case. For example, `jobTitle` not `JobTitle`.
+</Aside>
+
+This looks good, but we haven't defined any of the relationships between the models.
+
+## Relationships
+
+There are several different types of relationships:
+
+### **One-to-one**
+A one-to-one relationship is a relationship where a record in one table is associated with exactly one record in another table.
+
+![](./images/one-to-one.png)
+
+### **One-to-many**
+
+A one-to-many relationship is a relationship where a record in one table is associated with one or more records in another table.
+
+![](./images/one-to-many.png)
+
+### **Many-to-many**
+
+A many-to-many relationship is a relationship where multiple records in one table are associated with multiple records in another table.
+
+![](./images/many-to-many.png)
+
+<Aside type="note" title="Naming Conventions">
+  When creating junction tables, I name them based on the two tables they connect. For example, if I have a `User` and `Application` model, I'll name the junction table `ApplicationUser`. Notice the models are listed in alphabetical order.
+</Aside>
+
+Here's a diagram of all the models and their relationships for this project.
+
+![](./images/database.png)
+
+Coincidentally, all the relationships in our project are one-to-many.
+
+<Aside type="tip" title="Database Diagram">
+  I always find it helpful to have a visual representation of the database.
+
+  I created these diagrams with [tldraw](https://tldraw.com/). But, [Whimsical](https://whimsical.com/) and [Figma](https://www.figma.com/) are also great tools.
+
+  [prisma-dbml-generator](https://github.com/notiz-dev/prisma-dbml-generator) is an interesting project. It's built on top of [dbdiagram.io](https://dbdiagram.io/) and can take a Prisma Schema and generate a diagram.
+</Aside>
+
+When establishing a relationship within your schema, there are 3 parts.
+
+1. **The field that will hold the relationship.** This stores the ID of the related record.
+2. **The relationship definition.** This defines the relationship between the two models.
+3. **The reverse relationship definition.** This defines the relationship from the related model back to the original model.
+
+Let's look at the `Company` and `Contact` models.
+
+```prisma {4, 15-16} title="src/db/schema.prisma"
+model Company {
+  id           String        @id @default(uuid())
+  name         String
+  contacts     Contact[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime?     @updatedAt
+}
+
+model Contact {
+  id        String    @id @default(uuid())
+  firstName String
+  lastName  String
+  email     String?
+  role      String?
+  companyId String
+  company   Company   @relation(fields: [companyId], references: [id])
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+}
+```
+
+1. On the `Contact` model, we added a `companyId` field. This stores the ID of the related `Company` record.
+2. On the `Contact` model, we also added a `company` field, that defines the relationship.
+  - It is connected to the `Company` model.
+  - It uses the `companyId` field to connect the two models.
+  - It uses the `id` field on the `Company` model as the reference.
+3. On the `Company` model, we added a `contacts` field.
+  - The type of content will be an array `[]` of `Contact` records.
+
+In some cases, you might need to give the relationship a name. This is particularly useful when you have multiple relationships between the same models.
+
+Here, I've named the relationship `CompanyContacts`.
+
+```prisma ins="CompanyContacts" title="src/db/schema.prisma"
+model Company {
+  id           String        @id @default(uuid())
+  contacts     Contact[]     @relation("CompanyContacts")
+  ...
+}
+
+model Contact {
+  id        String    @id @default(uuid())
+  companyId String
+  company   Company   @relation("CompanyContacts", fields: [companyId], references: [id])
+}
+```
+
+We need to create the remaining relationships. Here's my final `prisma.schema` file.
+
+```prisma showLineNumbers=true title="src/db/schema.prisma" {15-16, 27-28, 34, 40-41, 52-53, 65}
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+  output          = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Application {
+  id             String            @id @default(uuid())
+  userId         String
+  user           User              @relation(fields: [userId], references: [id])
+  status         ApplicationStatus @relation(fields: [statusId], references: [id])
+  statusId       Int               @default(1)
+  salaryMin      String?
+  salaryMax      String?
+  dateApplied    DateTime?
+  jobTitle       String?
+  jobDescription String?
+  postingUrl     String?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime?         @updatedAt
+  archived       Boolean           @default(false)
+  companyId      String
+  company        Company           @relation(fields: [companyId], references: [id])
+}
+
+model ApplicationStatus {
+  id           Int           @id @default(autoincrement())
+  status       String
+  applications Application[]
+}
+
+model Company {
+  id           String        @id @default(uuid())
+  name         String
+  applications Application[]
+  contacts     Contact[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime?     @updatedAt
+}
+
+model Contact {
+  id        String    @id @default(uuid())
+  firstName String
+  lastName  String
+  email     String?
+  role      String?
+  companyId String?
+  company   Company?  @relation(fields: [companyId], references: [id])
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+model User {
+  id                 String        @id @default(uuid())
+  email              String        @unique
+  authToken          String?
+  authTokenExpiresAt DateTime?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime?     @updatedAt
+  applications       Application[]
+}
+```
+
+## Running Migrations
+
+First, we'll need to create the migration. Run the `pnpm migrate:new` command and give the migration a name. Since this is our first migration, we'll call it our `initial migration`.
+
+```bash
+pnpm migrate:new "initial migration"
+```
+
+![]()
+
+This will generate a `sql` file in the `migrations` folder.
+
+![]()
+
+<Aside type="note" title="The Number of Migrations">
+  Worried about the number of migrations in your project? Don't.
+</Aside>
+
+Now, we need to apply the migration.
+
+```bash
+pnpm migrate:dev
+```
+
+![]()
+
+## Previewing the Migration
+
+;tk - Bee Keeper Studio
+
+![]()
+
+## Seed the database
+
+Instead of manually adding data to the database, we can use a seed file to add data to do the job for us. This is particularly helpful if you need to reset the database during development.
+
+Inside the `src/scripts/seed.ts` file, ;tk
+
+## Further reading
+
+- [Prisma Documentation](https://www.prisma.io/docs)
+- [VS Code Prisma Extension]()

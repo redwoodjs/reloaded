@@ -1,0 +1,101 @@
+---
+title: ShadCN
+description: A guide in my new Starlight docs site.
+---
+
+import { Aside, Steps, FileTree } from '@astrojs/starlight/components';
+
+## Installing ShadCN
+
+<Aside type="note" title="Current Version of ShadCN">
+TailwindCSS v4 was _just_ released, so we'll need to [use a canary version of ShadCN](https://ui.shadcn.com/docs/tailwind-v4) to get the latest components.
+</Aside>
+
+<Steps>
+1. Install ShadCN
+    ```bash
+    pnpm dlx shadcn@canary init
+    ```
+2. [Install TailwindCSS](/guides/frontend/tailwind).
+3. Add path aliases to `tsconfig.json`:
+    ```json
+    {
+      "files": [],
+      "references": [
+        { "path": "./tsconfig.app.json" },
+        { "path": "./tsconfig.node.json" }
+      ],
+      "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+          "@/*": ["./src/*"]
+        }
+      }
+    }
+    ```
+4. Add path aliases to `tsconfig.app.json`:
+    ```json
+    {
+      "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+          "@/*": ["./src/*"]
+        }
+      }
+    }
+    ```
+5. Install `@types/node`
+    ```bash
+    pnpm add -D @types/node
+    ```
+6. Add resolve alias config to `vite.config.ts`:
+    ```ts
+    import path from "path"
+    import tailwindcss from "@tailwindcss/vite"
+    import react from "@vitejs/plugin-react"
+    import { defineConfig } from "vite"
+
+    export default defineConfig({
+      plugins: [react(), tailwindcss()],
+      resolve: {
+        alias: {
+          "@": path.resolve(__dirname, "./src"),
+        },
+      },
+    })
+    ```
+
+7. Initialize `shadcn/ui`. This will create your `components.json` and set up your CSS variables:
+    ```bash
+    pnpm dlx shadcn@canary init
+    ```
+
+8. You should now be able to add components:
+    You can add components in bulk by running:
+    ```bash
+    pnpm dlx shadcn@canary add
+    ```
+
+    Or, you can add a single component by running:
+    ```bash
+    pnpm dlx shadcn@canary add <COMPONENT-NAME>
+    ```
+
+    Components will be added to the `src/components/ui` folder.
+
+    <FileTree>
+    - src/
+      - app/
+        - components/
+          - ui/
+    </FileTree>
+</Steps>
+
+<Aside type="note" title="React Server Components">
+By default, all pages and components within Redwood are server components. However, most of the ShadCN components require reactivity. Therefore, you may need to add `use client` to the top of your component file.
+</Aside>
+
+## Further reading
+
+- [ShadCN](https://ui.shadcn.com/)
+- [TailwindCSS v4](https://tailwindcss.com/docs/installation/using-vite)

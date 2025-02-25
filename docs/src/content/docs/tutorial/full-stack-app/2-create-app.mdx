@@ -1,0 +1,196 @@
+---
+title: Create the Application
+slug: tutorial/full-stack-app/create-app
+sidebar:
+  label: Create the Application
+description: A guide in my new Starlight docs site.
+---
+
+import { FileTree } from '@astrojs/starlight/components';
+import { Aside } from '@astrojs/starlight/components';
+import { Steps } from '@astrojs/starlight/components';
+
+## Project Generation and Structure
+
+The first thing we'll do is generate our project.
+
+{/* this command doesn't exist yet */}
+
+```bash
+pnpm create vite@latest applywize -- --template redwoodsdk
+```
+
+This will create a directory called `applywize` with the RedwoodSDK project structure.
+
+<FileTree>
+- migrations/
+- prisma/
+  - schema.prisma
+- public/
+- src/
+  - app/
+    - pages/
+      - Home.tsx
+    - shared/
+      - links.ts
+    - Document.tsx
+  - scripts/
+    - seed.ts
+  - client.tsx
+  - db.ts
+  - worker.tsx
+- types/
+- .gitignore
+- README.md
+- tsconfig.json
+- .vite.config.mts
+- worker-configuration.d.ts
+- wrangler.toml
+</FileTree>
+
+<Aside type="note" title="Starter Projects">
+  For the tutorial, we're starting with the [Prisma starter project](/reference/starters/prisma/). However, if you start with a different template, the files and folders may vary slightly.
+</Aside>
+
+{/* TODO: add some additional context for the purpose of each file */}
+
+## Setting up TailwindCSS and ShadCN
+
+Let's start by installing [TailwindCSS](https://tailwindcss.com/) and [ShadCN](https://ui.shadcn.com/).
+
+TailwindCSS is a utility-first CSS framework that makes it easy to style your components.
+
+ShadCN components is a library of pre-built components making it easier for us to focus on the functionality of our app, rather than the styling and building of components.
+
+### TailwindCSS
+
+Since the RedwoodSDK is based on React and Vite, we can work through the ["Using Vite" documentation](https://tailwindcss.com/docs/installation/using-vite).
+
+<Steps>
+1. Install Tailwind CSS
+    ```bash
+    npm install tailwindcss @tailwindcss/vite
+    ```
+
+2. Configure the Vite Plugin
+    ```ts ins="import tailwindcss from '@tailwindcss/vite'" ins="tailwindcss(),"
+    // vite.config.mts
+    import { defineConfig } from "vite";
+    import tailwindcss from '@tailwindcss/vite'
+    import { redwood } from "@redwoodjs/sdk/vite";
+
+    export default defineConfig({
+      plugins: [
+        redwood(),
+        tailwindcss(),
+      ],
+    });
+    ```
+
+3. Import Tailwind CSS
+    Create a `src/app/styles.css` file.
+    ```css
+    @import "tailwindcss";
+    ```
+
+4. Now, you can run `pnpm run dev` and the "Hello World" text should look different.
+    ```bash
+    pnpm run dev
+    ```
+
+</Steps>
+
+### ShadCN
+
+<Aside type="note" title="Current Version of ShadCN">
+TailwindCSS v4 was _just_ released, so we'll need to [use a canary version of ShadCN](https://ui.shadcn.com/docs/tailwind-v4) to get the latest components.
+</Aside>
+
+<Steps>
+1. Install ShadCN
+    ```bash
+    pnpm dlx shadcn@canary init
+    ```
+2. Add path aliases to `tsconfig.json`:
+    ```json
+    {
+      "files": [],
+      "references": [
+        { "path": "./tsconfig.app.json" },
+        { "path": "./tsconfig.node.json" }
+      ],
+      "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+          "@/*": ["./src/*"]
+        }
+      }
+    }
+    ```
+3. Add path aliases to `tsconfig.app.json`:
+    ```json
+    {
+      "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+          "@/*": ["./src/*"]
+        }
+      }
+    }
+    ```
+4. Install `@types/node`
+    ```bash
+    pnpm add -D @types/node
+    ```
+5. Add resolve alias config to `vite.config.ts`:
+    ```ts
+    import path from "path"
+    import tailwindcss from "@tailwindcss/vite"
+    import react from "@vitejs/plugin-react"
+    import { defineConfig } from "vite"
+
+    export default defineConfig({
+      plugins: [react(), tailwindcss()],
+      resolve: {
+        alias: {
+          "@": path.resolve(__dirname, "./src"),
+        },
+      },
+    })
+    ```
+6. Initialize `shadcn/ui`. This will create your `components.json` and set up your CSS variables:
+    ```bash
+    pnpm dlx shadcn@canary init
+    ```
+7. You should now be able to add components:
+    ```bash
+    pnpm dlx shadcn@canary add
+    ```
+
+    Select the following:
+    - Avatar
+    - Badge
+    - Breadcrumb
+    - Button
+    - Calendar
+    - Date Picker
+    - Input
+    - Label
+    - Pagination
+    - Popover
+    - Select
+    - Sheet
+    - Sonner
+    - Table
+
+    This will install all the components inside the a `src/app/components/ui` folder.
+</Steps>
+
+Perfect, now that we have our project setup, and all the frontend components installed, [let's start building the backend.](/tutorial/full-stack-app/database-setup)
+
+
+## Further reading
+
+- [TailwindCSS](https://tailwindcss.com/)
+- [ShadCN](https://ui.shadcn.com/)
+

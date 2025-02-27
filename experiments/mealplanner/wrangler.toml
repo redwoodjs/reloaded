@@ -1,0 +1,36 @@
+#:schema node_modules/wrangler/config-schema.json
+name = "mealplanner"
+main = "src/worker.tsx"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+assets = { binding = "ASSETS" }
+
+[observability]
+enabled = true
+
+[durable_objects]
+bindings = [
+  { name = "SESSION_DURABLE_OBJECT", class_name = "SessionDurableObject" }
+]
+
+[vars]
+SECRET_KEY = "_"
+APP_NAME = "mealplanner"
+RP_ID = "mealplanner.redwoodjs.workers.dev"
+
+
+[[migrations]]
+tag = "v1"
+new_classes = [ "SessionDurableObject" ]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "mealplanner"
+database_id = "3406ce85-6601-4c2f-be7c-f6146c49803f"
+
+[[queues.producers]]
+queue = "mealplan-queue"
+binding = "QUEUE"
+
+[[queues.consumers]]
+queue = "mealplan-queue"

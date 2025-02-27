@@ -1,0 +1,92 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+  output          = "../node_modules/.prisma/client"
+
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String      @id @default(uuid()) // User ID (UUID-based)
+  username    String      @unique
+  createdAt   DateTime    @default(now())
+
+  credentials Credential[] // Relationship: One user can have many credentials
+  setup       Setup?
+  mealplan    MealPlan?
+}
+
+model Credential {
+  id            String   @id @default(uuid()) // Internal DB ID
+  userId        String   @unique // Each user has one discoverable credential
+  user          User     @relation(fields: [userId], references: [id])
+  createdAt     DateTime @default(now())
+  credentialId  String   @unique // WebAuthn credential identifier
+  publicKey     Bytes
+  counter       Int      @default(0)
+  
+  @@index([credentialId])
+  @@index([userId])
+}
+
+model Setup {
+  id             String   @id @default(uuid()) // Setup ID
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id]) // One-to-one relationship with User
+  age            Int
+  gender         String   // Example: "Male", "Female", "Non-binary", etc.
+  weight         Float    // Weight in kilograms
+  height         Float    // Height in centimeters
+  activityLevel  String   // Example: "Sedentary", "Light", "Moderate", "Active", "Very Active"
+  dietaryPreferences String? // Example: "Vegan", "Keto", "Paleo", "None", etc.
+  weightGoal     String? // Example: "Lose weight, maintain weight, gain weight" 
+  healthIssues   String?  // Any known health issues or restrictions
+  createdAt      DateTime @default(now())
+}
+
+model MealPlan {
+  id      String  @id @default(uuid())
+  userId  String  @unique
+  user    User    @relation(fields: [userId], references: [id])
+  plan    Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+  shoppingList ShoppingList?
+}
+
+model ShoppingList {
+  id        String  @id @default(uuid())
+  userId    String  @unique
+  mealPlan  MealPlan @relation(fields: [mealPlanId], references: [id])
+  mealPlanId String @unique
+  items     Json
+  createdAt DateTime @default(now())
+}
+
+model MealPlanStatus {
+  id        String  @id @default(uuid())
+  userId    String  @unique
+  status    String  // "queued", "processing", "completed", "failed"
+  startedAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+  message   String? // Optional status message
+}
+
+model ShoppingListStatus {
+  id        String  @id @default(uuid())
+  userId    String  @unique
+  status    String  // "queued", "processing", "completed", "failed"
+  startedAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+  message   String? // Optional status message
+}

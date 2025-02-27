@@ -3,6 +3,7 @@ packages:
   - 'docs'
   - 'experiments/billable'
   - 'experiments/yt-dos'
+  - 'experiments/mealplanner'
   - 'experiments/cutable'
   - 'starters/minimal'
   - 'starters/prisma'
